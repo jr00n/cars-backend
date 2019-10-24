@@ -84,29 +84,7 @@ pipeline {
                         echo "Created objects from YAML file: ${fromYAML.names()}"
                     }
                 }
-            }       
-            /*
-            steps {
-                script {
-                    openshift.withCluster() {
-                        def app = openshift.newApp("${appName}:latest")
-                        app.narrow("svc").expose();
-                        // geen triggers op redeploy wanneer het image veranderd. Jenkins is in control
-                        openshift.set("triggers", "dc/os-fase2-jeeapp", "--manual")
-                        openshift.set("probe dc/os-fase2-jeeapp --readiness --get-url=http://:8080/actuator/health --initial-delay-seconds=30 --failure-threshold=10 --period-seconds=10")
-                        openshift.set("probe dc/os-fase2-jeeapp --liveness  --get-url=http://:8080/actuator/health --initial-delay-seconds=180 --failure-threshold=10 --period-seconds=10")
-                        def dc = openshift.selector("dc", "${appName}")
-                        
-
-                        // wachten tot alle replicas beschikbaar zijn.
-                        while (dc.object().spec.replicas != dc.object().status.availableReplicas) {
-                            echo "Wait for all replicas are available"
-                            sleep 10
-                        }
-                    }
-                }
             }
-            */
         }
         stage('Deploy in O') {
             steps {
