@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>nl.belastingdienst.pipelinedemo</groupId>
-	<artifactId>backend</artifactId>
+	<artifactId>cars-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>backend</name>
 	<description>Demo Backend voor OpenShift pipeline demo</description>
@@ -22,7 +22,7 @@
 		<profile>
             <id>openshift</id>
             <build>
-                <finalName>backend</finalName>
+                <finalName>cars-backend</finalName>
             </build>
         </profile>
 	</profiles>
