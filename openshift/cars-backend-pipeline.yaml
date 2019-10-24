@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: List
+metadata:
+  name: cars-backend-pipeline
+items:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    labels:
+      app: cars-backend
+    name: cars-backend-pipeline
+  spec:
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      git:
+        ref: master
+        uri: "ssh://git@git.belastingdienst.nl:7999/~wolfj09/cars-backend.git"
+    strategy:
+      jenkinsPipelineStrategy:
+        jenkinsfilePath: jenkins/Jenkinsfile
+    triggers:
+      - generic:
+          secret: 9oFZQ9gNk3PZBjPbHXIB
+        type: Generic

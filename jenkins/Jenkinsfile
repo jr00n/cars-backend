@@ -5,38 +5,21 @@ def version
 def project = env.PROJECT_NAME
 
 pipeline {
-    agent none
+    agent {
+        label "jos-m3-openjdk8"
+    }
     options {
-		skipDefaultCheckout()
         disableConcurrentBuilds() 
 	}
     stages {
-        stage('Check out') {
-            agent {
-                label "jos-m3-openjdk8"
-            }
-            steps {
-                checkout scm
-                // stash workspace
-				stash(name: 'ws', includes: '**', excludes: '**/.git/**')
-            }
-        }
         stage('Maven build') {
-            agent {
-                label "jos-m3-openjdk8"
-            }
             steps {
-                unstash 'ws'
 				sh(script: "${mvnCmd} -DskipTests -Popenshift clean package" )
 				stash name: 'jar', includes: 'target/**/*'
             }    
         }
         stage('Maven unit tests') {
-            agent {
-                label "jos-m3-openjdk8"
-            }
             steps {
-                unstash 'ws'
                 sh(script: "${mvnCmd} test")
             }
             post {
@@ -62,9 +45,6 @@ pipeline {
             }
         }
         stage('Build Image') {
-            agent {
-                label "jos-m3-openjdk8"
-            }
             steps {
                 unstash 'jar'
                 script {
@@ -74,7 +54,7 @@ pipeline {
                 }
             }
         }
-        stage('Create deployment in O') {
+        stage('Create dc in O') {
             when {
                 expression {
                     openshift.withCluster() {
@@ -82,6 +62,30 @@ pipeline {
                     }
                 }
             }
+            steps {
+                script {
+                    openshift.withCluster() {
+                        // ruim eerst de objecten op die evt zijn blijven staan..om fout meldingen te voorkomen.
+                        if (openshift.selector('dc', "${appName}").exists()) {
+                            openshift.selector('dc', "${appName}").delete()
+                        }
+                        if (openshift.selector('svc', "${appName}").exists()) {
+                            openshift.selector('svc', "${appName}").delete()
+                        }
+                        if (openshift.selector('route', "${appName}").exists()) {
+                            openshift.selector('route', "${appName}").delete()
+                        }
+                        // maak op basis van deze List de benodigde objecten aan (dc,svc en route)
+                        // de deployment config gebruik de applicatie image met tag 'latest'
+                        // en de trigger in om te deployen bij image change staat uitgeschakeld,
+                        // om dat Jekins bepaald wanneer er gedeloyed gaat worden en niet de trigger.
+
+                        def fromYAML = openshift.create( readFile('openshift/cars-backend-o.yaml'))
+                        echo "Created objects from YAML file: ${fromYAML.names()}"
+                    }
+                }
+            }       
+            /*
             steps {
                 script {
                     openshift.withCluster() {
@@ -102,6 +106,7 @@ pipeline {
                     }
                 }
             }
+            */
         }
         stage('Deploy in O') {
             steps {
