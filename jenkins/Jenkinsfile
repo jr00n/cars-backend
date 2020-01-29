@@ -6,7 +6,7 @@ def project = env.PROJECT_NAME
 
 pipeline {
     agent {
-        label "jos-m3-openjdk8"
+        label "maven"
     }
     options {
         disableConcurrentBuilds() 
